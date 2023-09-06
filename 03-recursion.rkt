@@ -43,13 +43,19 @@
 
 
 ;; Fibonacci series: 0 1 1 2 3 5 8 13 21 34 55 ...
-(define (fib n)
+(trace-define (fib n)
   (if (<= n 1)
       n
       (+ (fib (- n 1))
          (fib (- n 2)))))
 
-; (trace fib)
+(define (fib-tail n)
+  (let rec ([f0 0]
+            [f1 1]
+            [i 0])
+    (if (= i n)
+        f0
+        (rec f1 (+ f0 f1) (add1 i)))))
 
 
 
