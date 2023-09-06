@@ -82,7 +82,9 @@
         [else (cons (first l1) (concat (rest l1) l2))]))
 
 (define (reverse lst)
-  (void))
+  (if (empty? lst)
+      lst
+      (concat (reverse (rest lst)) (list (first lst)))))
 
 
 (define (range n)
