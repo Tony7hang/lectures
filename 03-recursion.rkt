@@ -66,12 +66,20 @@
 -----------------------------------------------------------------------------|#
 
 (define (length lst)
-  (void))
+  (if (empty? lst)
+      0
+      (add1 (length (rest lst)))))
 
 
 (define (repeat n x)
-  (void))
+  (if (= n 0)
+      '()
+      (cons x (repeat (sub1 n) x))))
 
+(trace-define (concat l1 l2)
+  (cond [(empty? l1) l2]
+        [(empty? l2) l1]
+        [else (cons (first l1) (concat (rest l1) l2))]))
 
 (define (reverse lst)
   (void))
