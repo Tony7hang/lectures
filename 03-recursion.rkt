@@ -87,5 +87,15 @@
       (concat (reverse (rest lst)) (list (first lst)))))
 
 
+(define (rev-range n) ; (range 5) -> '(0 1 2 3 4) = (cons 0 (cons 1 (cons 2 (cons 3 (cons 4 '())))))
+  (if (< n 0)
+      '()
+      (cons (sub1 n) (range (sub1 n))))) ; this prints backwards 4 3 2 1 0
+
 (define (range n)
-  (void))
+  (trace-let rec ([i 0]) ; kinda like a for loop, rec ~ for
+    (if (= i n)
+        '()
+        (cons i (rec (add1 i))))))
+
+
