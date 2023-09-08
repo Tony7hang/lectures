@@ -76,9 +76,12 @@ ccons
 ;; eval is like having access to the Racket compiler in Racket!
 ; (eval `(cons '+ (cons 1 (cons 2 '()))))
 
+(define-namespace-anchor anc)
+(define ns (namespace-anchor->namespace anc))
+
 (define (my-if test e1 e2)
-  (eval `(cond (,test , e1)
-               (else , e2))))
+  (eval `(cond (,test ,e1)
+               (else ,e2)) ns))
 
 (my-if '(< 1 2)
        '(println "true")
@@ -86,8 +89,6 @@ ccons
 
 (define (three-times e)
   (eval `(begin, e, e, e)))
-
-
 
 #|-----------------------------------------------------------------------------
 ;; Some list-processing HOFs
@@ -106,17 +107,26 @@ ccons
 ; ((lambda () 1)) will print 1
 ; (lambda () 1) wont actually run the lambda function
 
+(trace-define (map f l)
+  (if (empty? l)
+      '()
+      (cons (f (first l)) ; construct a new list, where each element is the
+            (map f (rest l))))) ; result of applying l to an element in l
 ;; `map` examples
-#; (values
+ (values
    (map add1 (range 10))
 
    (map (curry * 2) (range 10))
  
    (map string-length '("hello" "how" "is" "the" "weather?")))
 
-
+(trace-define (filter p l)
+  (cond [(empty? l) '()]
+        [(p (first l)) (cons (first l)
+                             (filter p (rest l)))] ; ^ this is plain rec
+        [else (filter p (rest l))])) ; <- this is tail end rec
 ;; `filter` examples
-#; (values 
+ (values 
    (filter even? (range 10))
    
    (filter (curry < 5) (range 10))
