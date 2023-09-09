@@ -19,12 +19,14 @@
   - Anonymous functions
 
 - Dynamically and Strongly typed
+  dynamic     vs   static
+  int i = 1   vs   i = 1
 
   - Sister language "Typed Racket" is statically typed
 
 - Pass by value with pointer semantics
 
-- Lexically scoped
+- Lexically scoped (vs dynamically scoped)
 
 - Heap-based storage with garbage collection
 -----------------------------------------------------------------------------|#
@@ -39,6 +41,9 @@
                (list x) 
                (quicksort < xs-gte)))]))
 
+(quicksort < '(5 3 1 4 2))
+(quicksort > '(5 3 1 4 2))
+(quicksort string<? '("hello" "how" "are" "you?"))
 
 #|-----------------------------------------------------------------------------
 ;; Basic syntax
@@ -70,6 +75,15 @@ A sexp is either an *atom* or a *list*.
 ;; Let's write some (syntactically) valid sexps!
 ;; Note: `#;` is a convenient, special "sexp comment"
 
+42
+
+#; a 45 ; only a is commented out, sexp comment
+
+; a ; syntatically correct but will give error when ran cuz cant be evaled
+
+#; "hello"
+#; #f
+#; (hi)
 
 
 #|-----------------------------------------------------------------------------
@@ -95,7 +109,23 @@ A sexp is either an *atom* or a *list*.
 
 ;; try evaluating some sexps
 
++
 
+(+ 1 2)
+(+ 1 2 3 4)
+
+add1
+(add1 5)
+
+(+ 5 (add1 10))
+
+(println "hello world")
+
+(if (< (random 10) 5)
+    (println "heads")
+    (println "tails"))
+
+; if is not a function, its a special form
 
 #|-----------------------------------------------------------------------------
 ;; Quoting
@@ -119,6 +149,19 @@ Quasiquoting is particularly useful for metaprogramming!
 
 ;; try evaluating some quote/quasiquote/unquote-based forms
 
+(quote (+ 1 2))
+'(+ 1 2 (...))
+
+(quasiquote (+ 1 2))
+(quasiquote (+ 5 (+ 1 2)))
+(quasiquote (+ 5 (unquote (+ 1 2))))
+; or
+`(+ 5 ,(+ 1 2))
+
+`(+ 5
+    ,(add1 5) ; this runs
+    (* 3
+       ,(+ 4 8))) ; this runs
 
 
 #|-----------------------------------------------------------------------------
@@ -128,24 +171,31 @@ Define global variables with `define` and local variables with `let` and `let*`
 -----------------------------------------------------------------------------|#
 
 (define *course-id* "CS 440")  ; sometimes we use "earmuffs" for global vars
+                               ; "earmuffs" = * *
 
 (define bignum (expt 2 50))
 
 ;; introducing local vars
+; local via let
 (define cnum (let ([x 10]
                    [y 44])
                (* x y)))
+; cnum = 440
+; let x = 10 and y = 44
+; cnum = x * y
+; local to within the parenthesis around the let
 
 ;; find roots of x^2 + 3x - 4 = (x - 1)(x + 4) = 0
 ;;  - need let* to use earlier vars when defining later ones
 (define roots (let* ([a  1]
                      [b  3]
                      [c -4]
-                     [disc (- (* b b) (* 4 a c))]
+                     [disc (- (* b b) (* 4 a c))] ; this line will error is just let not let*
                      [sqr-disc (sqrt disc)])
                 `(,(/ (+ (- b) sqr-disc) (* 2 a))
                   ,(/ (- (- b) sqr-disc) (* 2 a)))))
 
+roots
 
 #|-----------------------------------------------------------------------------
 ;; Pairs and Lists
@@ -187,6 +237,11 @@ Useful functions:
 
 (define pair4 '(3 1 . 2)) ; = (cons 3 (cons 1 2))
 
+(println "pairs examples:")
+pair1
+pair2
+pair3
+pair4
 
 ;; build and take apart some lists
 
@@ -197,14 +252,20 @@ Useful functions:
 (define lst3 (cons 1 (cons 2 (cons 3 '()))))
 
 (define lst4 (cons 1 (cons "hello" (cons #t '()))))
+(car (cdr (cdr lst4)))
+; or
+(caddr lst4)
 
 (define lst5 (list 1 "hello" #t))
 
 (define lst6 '(1 "hello" #t))
 
-(define lst7 '(1 "hello" #t . ()))
+(define lst7 '(1 "hello" #t . ())) ; lst6 and lst7 same, #t . () is just the last cons #t '()
 
 #; (define lst8 (list 1 (2 3) ((4 5) (6 7)))) ; what's wrong with this?
+; try to do function application but 2, 4, 6 not functions
+
+; list is a function so it will eval insides were as quote wont
 
 (define lst9 '(1 (2 3) ((4 5) (6 7))))
 
