@@ -17,11 +17,15 @@
 
 (define (f3 x) (add1 x))
 
-(define (f4 x y z)
+(define (f4 x y z) ; f4 and f2 is the same, syntatic sugar hinding lambda
   (println x)
   (println y)
   (println z)
   (* x (+ y z)))
+
+((lambda (x y) ; temp function with args x y
+   (+ x y)) ; the procedure
+ 5 8) ; what x y are
 
 
 ;; `values` and `let-values` can be used to return/retrieve multiple values
@@ -29,7 +33,7 @@
 (define (quad-roots a b c)
   (let* ([disc (- (* b b) (* 4 a c))]
          [sqr-disc (sqrt disc)])
-    (values (/ (+ (- b) sqr-disc) (* 2 a))
+    (values (/ (+ (- b) sqr-disc) (* 2 a)) ; values is another special form
             (/ (- (- b) sqr-disc) (* 2 a)))))
 
 (define (test-quad-roots r1 r2)
@@ -44,6 +48,9 @@
   (println x)
   (println y)
   (println z))
+
+(println "f5 outputs")
+(f5 1 2 3 4 5 6 7)
 
 (define (f6 . rest)
   (length rest))
@@ -76,30 +83,31 @@
   (if (equal? name "Jane")
       (println "Me Tarzan!")
       (printf "Hello, ~a~n" name))) ; `printf` does interpolation/formatting
-
+; ~a is where name will replace, ~n is new name?
 
 ;; digression: equality testing
 (list
  (list
   ;; `=` for numbers
-  (= 2 2)
-  (= 2 2.0)
-  (= 2 2.01)
-  (= 2 2.0000000000000000001)
-  (= 2 8/4))
+  (= 2 2) ; #t
+  (= 2 2.0) ; #t
+  (= 2 2.01) ; #f
+  (= 2 2.0000000000000000001) ; cuts off after some digit so returns #t
+  (= 2 8/4)) ; #t
 
  (list
   ;; `eq?` for pointer comparison
-  (eq? 'a 'a)
-  (eq? "hello world" "hello world")
-  (eq? '(a b c) '(a b c))
+  (eq? 'a 'a) ; #t
+  (eq? "hello world" "hello world") ; #t
+  (eq? '(a b c) '(a b c)) ; #f, new list is new con cells so dif adr in mem
   (let ([lst '(a b c)])
-    (eq? lst lst)))
+    (eq? lst lst))) ; #t
 
  (list
   ;; `equal?` for value comparison
-  (equal? "hello world" "hello world")
-  (equal? '(a b c) '(a b c))))
+  ; equal is not recursive, can treverse 1 lv only
+  (equal? "hello world" "hello world") ; #t
+  (equal? '(a b c) '(a b c)))) ; #t
  
 
 ;; use `string-ref` to get a char by index in a string
@@ -122,7 +130,7 @@
   ;; `cond` is a multi-way branch
   (cond [(equal? name "Jane")
          (println "Me Tarzan!")]
-        [(regexp-match? #rx"^Jan.*" name)
+        [(regexp-match? #rx"^Jan.*" name) ; any input starting with Jan followed by any number of chars
          (printf "You ~a?~n" name)]
         [else
          (printf "Hello, ~a~n" name)]))
