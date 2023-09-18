@@ -139,21 +139,52 @@ ccons
              ("hello" "there"))))
 
 
-;; `foldr` examples
-#; (values
+;; `foldr` examples ; fold right 'prim rec, right associative, run right first
+(define (foldr f val lst) ; our version so we can trace
+  (if (empty? lst)
+      val
+      (f (first lst) (foldr f val (rest lst)))))
+
+(trace foldr)
+
+(values
     (foldr + 0 (range 10))
 
     (foldr cons '() (range 10))
 
     (foldr cons '(a b c d e) (range 5))
 
-    (foldr (lambda (x acc) (cons x acc)) ; try trace-lambda
+    (foldr (trace-lambda (x acc) (cons x acc)) ; try trace-lambda
            '()
-           (range 5)))
+           (range 5))) ; change '() to 0, cons to + => sum
 
+#; (define (sum2 lst)
+  (if (empty? lst)
+      0
+      (+ (first lst) (sum2 (rest lst)))))
 
-;; `foldl` examples
-#; (values
+(define sum2 (curry foldr + 0))
+
+(define (copy-list lst)
+  (if (empty? lst)
+      '()
+      (cons (first lst) (copy-list (rest lst)))))
+
+(foldr + 100 '(8 5))
+; (+ 8 (foldr + 100 '(5)))
+; (+ 8 (+ 5 (foldr + 100 '())))
+; (+ 8 (+ 5 100))
+; (+ 8 105)
+; 113
+
+;; `foldl` examples ; fold left 'tail rec
+(define (foldl f acc lst)
+  (if (empty? lst)
+      acc
+      (foldl f (f (first lst) acc) (rest lst))))
+(trace foldl)
+
+(values
     (foldl + 0 (range 10))
     
     (foldl cons '() (range 10))
@@ -164,7 +195,22 @@ ccons
            '()
            (range 5)))
 
+(define reverse (curry foldl cons '()))
+(define sum3(curry foldl + 0))
+(sum3 (range 10))
 
+(define (partition x lst) ; split lst into 2 lst, one with values less then x and more with more
+  (foldl (lambda (y acc)
+           (if (< y x)
+               (list (cons y (first acc))
+                     (second acc))
+               (list (first acc)
+                     (cons y (second acc)))))
+         '(() ())
+         lst))
+
+(partition 5 '(1 8 9 2 3 10 7))
+  
 
 #|-----------------------------------------------------------------------------
 ;; Lexical scope
@@ -174,3 +220,25 @@ ccons
 
 - This leads to one of the most important ideas we'll see: the *closure*
 -----------------------------------------------------------------------------|#
+
+(define (simple n)
+  (let ([loc 10])
+    (+ n loc)))
+
+(define (make-obj)
+  (let ([attr 0])
+    (lambda (cmd)
+      (case cmd
+        ['inc (set! attr (add1 attr))]
+        ['dec (set! attr (sub1 attr))]
+        ['show (println attr)]))))
+
+(define o1 (make-obj))
+(o1 'show)
+(o1 'inc)
+(o1 'inc)
+(o1 'show)
+(o1 'dec)
+(o1 'show)
+
+; loc var can be saved by functions that req them. lambda will save it sort off
