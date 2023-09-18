@@ -7,11 +7,13 @@
 
 (define s1 (syntax "hello world"))
 
-(define s2 (syntax (foo bar 1 2 3)))
+(define s2 (syntax (foo bar 1 2 3))) ; special form, wont eval first
 
 (define s3 #'(foo bar 1 2 3)) ; #' is syntactic sugar for `syntax`
 
 (define s4 #'(if (< 1 2) "true" "false"))
+
+(define s5 #`(if #,(< 1 2) "true" "false")) ; kinda like the quasi quote
 
 #; (values
     (syntax-source s3)
@@ -21,21 +23,30 @@
 
 ;; `eval-syntax` evaluates syntax objects, like `eval` for sexps
 
-#; (eval-syntax s4)
+; (eval-syntax s4)
 
 
 ;; `datum->syntax` lets us create syntax objects from sexps (and context)
 
 #; (datum->syntax #f '(println "hello world"))
 
+#| -----------------------------------------------------------------------------
+;; `define-syntax` defines a syntax transformer, aka macro ***** <<====
+----------------------------------------------------------------------------- |#
 
-;; `define-syntax` defines a syntax transformer, aka macro
+(define-syntax always-say-hi
+  (lambda (stx) ; stx ref to original stx obj
+    #`(quote (hi #, stx))))
 
-(define-syntax always-say-hi void)
-
+(expand-once #'(say-hi 1 2 3))
 
 (define-syntax quote-myself void)
 
+(define-syntax (infix stx)
+  (let ([infix-exp (second (syntax->datum stx))])
+    #`(#,(second infix-exp) #,(first infix-exp) #,(third infix-exp))))
+
+(infix (2 * 4))
 
 ;; we can use `expand/step` (and others) to help us see the expansion of a macro
 
