@@ -13,12 +13,25 @@ been using is actually shorthand for a `module` declaration.
 -----------------------------------------------------------------------------|#
 
 ;; E.g., a standalone module
-(module foo racket)
+(module
+    foo ; module name
+  racket ; evaluation / initial import
 
+  (provide bar) ; export basically
 
+  (define (bar)
+    (println "hello from bar"))
+
+  (define (baz)
+    (println "hello from baz"))
+  )
+
+(require 'foo)
+
+(bar)
 
 #|-----------------------------------------------------------------------------
-;; The Reader and Expander
+;; The Reader and Expander -> reader is like the scanner+parser
 
 So what *really* happens when we load a source file into a Racket interpreter?
 
@@ -53,6 +66,10 @@ So what *really* happens when we load a source file into a Racket interpreter?
 -----------------------------------------------------------------------------|#
 
 ;; Implement a reader & expander for the "program" in 06-lang-demo.rkt
+
+#; (port->lines (open-input-file "06-lang-demo.rkt"))
+
+(provide read-syntax)
 
 
 
