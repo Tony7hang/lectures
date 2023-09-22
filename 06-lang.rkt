@@ -71,7 +71,46 @@ So what *really* happens when we load a source file into a Racket interpreter?
 
 (provide read-syntax)
 
+(define (read-syntax path port)
+  (define (non-comment? line)
+    (and (non-empty-string? line)
+         (not (string-prefix? line "--"))))
 
+  (define (make-form line)
+    (let ([lst (string-split line)])
+      `(update ,(first lst) ,(string->number (second lst)))))
+  
+  (let* ([src-lines (filter non-comment?
+                            (map string-trim (port->lines port)))])
+    (datum->syntax #f
+                  `(module demo "06-lang.rkt"
+                     ,@(map make-form src-lines)
+                     players))))
+
+(provide update players)
+
+(define players (make-hash)) ; mutable hashtable
+
+(define (update name val)
+  (hash-set! players
+             name ; key is name
+             (+ val ; add new val to
+                (hash-ref players name
+                          0 ; default val 0
+                          ))))
+
+
+(define iht(hash)) ; immutable
+(hash-update iht "a" add1 0) ; key function initial
+
+(make-hash)
+(define ht (make-hash))
+ht
+ht
+(hash-set! ht "a" "apple")
+ht
+(hash-ref ht "a" 0)
+ht
 
 #|-----------------------------------------------------------------------------
 ;; Interposition points
