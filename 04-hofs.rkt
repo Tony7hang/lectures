@@ -32,6 +32,7 @@ Some useful built-in HOFs and related functions:
    (apply + xs))
 
 ;; `curry` gives us partial application
+(print "curry time")
 
 ; (cons 1) -> fails
 ; (cons) -> fails
@@ -48,6 +49,8 @@ ccons
   (* x (+ y z)))
 
 (define foo (curry arity-of-3 5)) ; (foo 10 20) -> 150 ~> 5*(10+20)
+
+(print "curry time over")
 
 (define (flip f)
   (lambda (x y) (f y x)))
