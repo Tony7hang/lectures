@@ -2,6 +2,12 @@
 
 (require racket/trace)
 
+#|
+MP2 help???
+
+
+|#
+
 #|-----------------------------------------------------------------------------
 ;; Prelude: user defined types with `struct`
 -----------------------------------------------------------------------------|#
@@ -35,7 +41,10 @@
     [(? widget?) "It's some sort of widget"]
     [_ "I don't know what this is"]))
 
-
+(which-widget? w1)
+(which-widget? d1)
+(which-widget? w2)
+(which-widget? 42)
 
 #|-----------------------------------------------------------------------------
 ;; Our language
