@@ -105,7 +105,9 @@ Review: What is parsing?
 
 ;;; using Racket's reader
 #; (read)
-
+;can't past strings to read directly, can:
+(define (read-string str)
+  (read (open-input-string str)))
 
 
 #|-----------------------------------------------------------------------------
@@ -121,22 +123,35 @@ Review: What is parsing?
 ;;; Some types for decorating our syntax tree
 
 ;; integer value
-(struct int-exp () #:transparent)
+(struct int-exp (val) #:transparent)
 
 ;; arithmetic expression
-(struct arith-exp () #:transparent)
+(struct arith-exp (op lhs rhs) #:transparent)
 
 ;; variable
-(struct var-exp () #:transparent)
+(struct var-exp (id) #:transparent)
 
 ;; let expression
-(struct let-exp () #:transparent)
+(struct let-exp (ids vals body) #:transparent)
 
 
 ;; Parser
 (define (parse sexp)
-  (void))
+  (match sexp
+    [(? integer?)
+     (int-exp sexp)]
+    [(list '+ lhs rhs)
+     (arith-exp "PLUS" (parse lhs) (parse rhs))]
+    [(list '* lhs rhs)
+     (arith-exp "TIMES" (parse lhs) (parse rhs))]
+    [(? symbol?)
+     (var-exp sexp)]
+    [(list 'let (list (list id val) ...) body)
+     (let-exp (map parse id) (map parse val) (parse body))]
+    ))
 
+(parse (read-string "(+ 1 2)"))
+(parse (read-string p5))
 
 #|-----------------------------------------------------------------------------
 ;; Interpreter
@@ -144,6 +159,38 @@ Review: What is parsing?
 - The interpreter's job is the take the (decorated) syntax tree and evalute it!
 -----------------------------------------------------------------------------|#
 
+(assoc 'x '((x . 10) (y . 20)))
+
 ;; Interpreter
-(define (eval expr)
-  (void))
+(define (eval expr [env '()])
+  (match expr
+    [(int-exp val) val]
+
+    [(arith-exp "PLUS" lhs rhs)
+     (+ (eval lhs env) (eval rhs env))]
+    [(arith-exp "TIMES" lhs rhs)
+     (* (eval lhs env) (eval rhs env))]
+    [(var-exp id)
+     (let ([pair (assoc id env)])
+       (if pair
+           (cdr pair)
+           (error (format "~a not bound" id))))]
+    [(let-exp (list (var-exp id) ...)
+              (list val ...)
+              body)
+     (let ([vars (map cons id (map (lambda (v) (eval v env)) val))])
+       (eval body (append vars env)))] ; vars should be before env so new val is used instead of old val
+    ))
+
+(map cons '(1 2 3) '(4 5 6))
+(eval (parse (read-string p6)))
+
+(define (repl)
+  (let ([stx (parse (read))])
+    (println (eval stx))
+    (repl)))
+
+(eval (parse (read-string p2)))
+(eval (parse (read-string "(+ x 5)"))
+      '((x . 42)))
+(eval (parse (read-string p5)))
