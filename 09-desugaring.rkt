@@ -107,6 +107,11 @@ e.g., how might we desugar a function application with more than 1 argument?
 ;; Desugar-er -- i.e., syntax transformer
 (define (desugar exp)
   (match exp
+    [(lambda-exp ids body)
+     (foldr (lambda (id acc)
+              (lambda-exp id acc))
+            body
+            ids)]
     (_ exp)))
 
 
